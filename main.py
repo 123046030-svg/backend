@@ -9,3 +9,8 @@ def health():
 @app.get("/hello")
 def hello(name: str = "world"):
     return {"message": f"Hello, {name}!"}
+
+
+@app.get("/regis")
+def hello(name: str = "Regis"):
+    return {"message": f"Hello, {name}!"}
