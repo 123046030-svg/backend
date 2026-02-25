@@ -1,6 +1,7 @@
 # Virtual environment
 venv_backend/
 .venv_backend/
+./venv_backend/
 .venv/
 env/
 venv/
