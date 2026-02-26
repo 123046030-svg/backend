@@ -1,31 +1,35 @@
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-BASE_DIR = Path(__file__).resolve().parents[1]  # .../app
+BASE_DIR = Path(__file__).resolve().parents[1]  # .../backend
+ENV_PATH = BASE_DIR / ".env"
+
+# (Opcional) fallback si INSISTES en guardarlo en __pycache__
+ALT_ENV = BASE_DIR / "__pycache__" / ".env"
+if not ENV_PATH.exists() and ALT_ENV.exists():
+    ENV_PATH = ALT_ENV
 
 class Settings(BaseSettings):
-    # SMTP
-    MAIL_USERNAME: str = "sduop1@geq.net"
-    MAIL_PASSWORD: str = "1234567"
-    MAIL_FROM: str = "sduop1@geq.net"
+    # SMTP (sin defaults)
+    MAIL_USERNAME: str
+    MAIL_PASSWORD: str
+    MAIL_FROM: str
     MAIL_FROM_NAME: str = "SDUOP"
-    MAIL_SERVER: str = "am11313a.geq.net"
+    MAIL_SERVER: str
     MAIL_PORT: int = 587
 
     MAIL_STARTTLS: bool = True
     MAIL_SSL_TLS: bool = False
     USE_CREDENTIALS: bool = True
     VALIDATE_CERTS: bool = True
-    MAIL_TEST_RECIPIENT: str = "scop@queretaro.gob.mx"
 
-    # Templates
+    MAIL_TEST_RECIPIENT: str | None = None
+
     TEMPLATE_FOLDER: Path = BASE_DIR / "templates"
-
-    # Dev / tests
     MAIL_SUPPRESS_SEND: bool = False
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=str(ENV_PATH),
         case_sensitive=False,
         extra="ignore",
     )
