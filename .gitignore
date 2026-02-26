@@ -27,7 +27,6 @@ media/
 staticfiles/
 
 # Environment variables
-.env
 
 # Logs
 *.log
