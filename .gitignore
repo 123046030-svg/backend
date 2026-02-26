@@ -1,4 +1,7 @@
 # Virtual environment
+venv_backend/pyvenv.cfg
+requirements.txt
+__pycache__/main.cpython-39.pyc
 venv_backend/
 .venv_backend/
 venv_backend/*
