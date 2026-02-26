@@ -1,0 +1,30 @@
+# Virtual environment
+venv_backend/
+.venv_backend/
+venv_backend/*
+./venv_backend/
+.venv/
+env/
+venv/
+
+# Python
+_pycache_/
+*.py[cod]
+back_venv/
+.venv_backend/
+venv/
+.venv/
+*.swp
+*.pyo
+*.pyd
+
+# Django
+*.sqlite3
+media/
+staticfiles/
+
+# Environment variables
+.env
+
+# Logs
+*.log

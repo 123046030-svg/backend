@@ -1,6 +1,8 @@
 from fastapi import FastAPI
+from api.routes.email import router as email_router
 
 app = FastAPI(title="Backend Service", version="1.0.0")
+app.include_router(email_router)
 
 @app.get("/health")
 def health():
