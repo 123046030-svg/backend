@@ -3,7 +3,8 @@ from typing import Any, Dict, List, Optional
 import logging
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr, Field
-
+from fastapi_mail import FastMail, MessageSchema, MessageType
+from core.mail import conf
 from services.mailer import Mailer
 from core.settings import settings
 
@@ -23,27 +24,28 @@ class EmailRequest(BaseModel):
 
 
 @router.get("/test")
-async def send_test_simple(
-    background_tasks: BackgroundTasks,
-    recipient: Optional[EmailStr] = None,
-    mailer: Mailer = Depends(get_mailer),
-):
-    """
-    Prueba rápida sin plantilla.
-    Si no mandas recipient, usa MAIL_TEST_RECIPIENT.
-    """
+async def send_test_email():
     try:
-        await mailer.send_test_email(
-            recipient=str(recipient) if recipient else None,
-            background_tasks=background_tasks,
+        message = MessageSchema(
+            subject="Prueba de correo con Brevo",
+            recipients=[settings.MAIL_TEST_RECIPIENT],
+            body="""
+            <h2>Hola</h2>
+            <p>Este es un correo de prueba enviado desde FastAPI usando Brevo SMTP.</p>
+            """,
+            subtype=MessageType.html,
         )
+
+        fm = FastMail(conf)
+        await fm.send_message(message)
+
         return {
             "ok": True,
-            "message": "Correo de prueba enviado/encolado correctamente",
-            "recipient": str(recipient) if recipient else settings.MAIL_TEST_RECIPIENT,
+            "message": "Correo enviado correctamente",
+            "recipient": settings.MAIL_TEST_RECIPIENT,
         }
+
     except Exception as e:
-        logger.exception("Error sending simple test email")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error sending email: {type(e).__name__}: {str(e)}",
