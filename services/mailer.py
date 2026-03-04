@@ -3,13 +3,13 @@ from typing import Any, Dict, List, Optional
 from fastapi import BackgroundTasks
 from fastapi_mail import FastMail, MessageSchema, MessageType
 
-from core.mail import mail_conf
+from core.mail import conf
 from core.settings import settings
 
 
 class Mailer:
     def __init__(self) -> None:
-        self.fm = FastMail(mail_conf)
+        self.fm = FastMail(conf)
 
     async def send_html(
         self,
