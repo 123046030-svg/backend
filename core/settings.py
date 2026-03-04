@@ -4,10 +4,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 BASE_DIR = Path(__file__).resolve().parents[1]  # .../app
 
 class Settings(BaseSettings):
-    # SMTP
-    MAIL_USERNAME: str = "smtp-relay.brevo.com"
-    MAIL_PASSWORD: str = "bskx2ZlnEqKRn4c"
-    MAIL_FROM: str = "a38dfa001@smtp-brevo.com"
+    # SMTP - Brevo
+    MAIL_USERNAME: str
+    MAIL_PASSWORD: str
+    MAIL_FROM: str
     MAIL_FROM_NAME: str = "SDUOP"
     MAIL_SERVER: str = "smtp-relay.brevo.com"
     MAIL_PORT: int = 587

@@ -1,18 +1,6 @@
 from fastapi import FastAPI
-from api.routes.email import router as email_router
+from api.mail import router as mail_router
 
-app = FastAPI(title="Backend Service", version="1.0.0")
-app.include_router(email_router)
+app = FastAPI()
 
-@app.get("/health")
-def health():
-    return {"status": "ok"}
-
-@app.get("/hello")
-def hello(name: str = "world"):
-    return {"message": f"Hello, {name}!"}
-
-
-@app.get("/regis")
-def hello(name: str = "Regis"):
-    return {"message": f"Hello, {name}!"}
+app.include_router(mail_router)
