@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     MAIL_SSL_TLS: bool = False
     USE_CREDENTIALS: bool = True
     VALIDATE_CERTS: bool = True
-    MAIL_TEST_RECIPIENT: str = "reginacorteees@gmail.com"
+    MAIL_TEST_RECIPIENT: str = "123046030@upq.edu.mx"
 
     # Templates
     TEMPLATE_FOLDER: Path = BASE_DIR / "templates"
