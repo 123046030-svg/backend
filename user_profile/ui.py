@@ -96,7 +96,7 @@ async def edit_profile_post(
     context = {
         "full_name": profile.full_name,
         "email": profile.email,
-        "updated_at": profile.updated_at,
+        "updated_at": profile.updated_at.isoformat(),
         "changes": changes,
         "has_changes": bool(changes),
     }
