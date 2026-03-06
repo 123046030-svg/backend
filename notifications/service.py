@@ -6,7 +6,7 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, Dict, Any, List
 from .models import EmailOutbox
-from core.settings import settings
+from notifications.settings import settings
 from services.mailer import Mailer
 
 def utcnow():

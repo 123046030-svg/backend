@@ -7,7 +7,7 @@ from .models import EmailOutbox
 from .service import try_send_one, utcnow
 from services.mailer import Mailer
 from core.db import async_session_maker  # tu factory real
-from core.settings import settings
+from notifications.settings import settings
 
 async def fetch_due(db: AsyncSession) -> EmailOutbox | None:
     q = (
