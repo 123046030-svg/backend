@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Editar perfil</title>
+</head>
+<body>
+  <h2>Editar perfil (demo)</h2>
+
+  {% if request.query_params.get("queued") %}
+    <div style="padding:10px;border:1px solid #0a0;">
+      Cambios guardados. Correo encolado con ID: <b>{{ request.query_params.get("queued") }}</b>
+    </div>
+  {% endif %}
+
+  <form method="post" action="/ui/profile/edit">
+    <label>Nombre</label><br/>
+    <input name="full_name" value="{{ profile.full_name }}" style="width:350px"/><br/><br/>
+
+    <label>Correo</label><br/>
+    <input name="email" value="{{ profile.email }}" style="width:350px"/><br/><br/>
+
+    <label>Teléfono</label><br/>
+    <input name="phone" value="{{ profile.phone or '' }}" style="width:350px"/><br/><br/>
+
+    <label>Área/Departamento</label><br/>
+    <input name="department" value="{{ profile.department or '' }}" style="width:350px"/><br/><br/>
+
+    <button type="submit">Guardar cambios</button>
+  </form>
+
+  <hr/>
+  <p>
+    Tip: revisa auditoría en tu módulo de outbox (lista de emails) para ver status y reintentos.
+  </p>
+</body>
+</html>
