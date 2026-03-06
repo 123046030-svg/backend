@@ -12,7 +12,10 @@ from core.db import get_db
 from user_profile.models import DemoProfile
 from notifications.service import enqueue_email  # tu outbox
 
-templates = Jinja2Templates(directory="templates")
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent  # .../user_profile
+templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 router = APIRouter(prefix="/ui/profile", tags=["ui-profile"])
 
