@@ -26,6 +26,13 @@ venv/
 media/
 staticfiles/
 
+
+# alembic
+alembic/__pycache__/
+alembic/*.pyc
+
+core/__pycache__/
+notifications/__pycache__/
 # Environment variables
 
 # Logs
