@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from typing import Optional, Dict, Any, List
 from .models import EmailOutbox
 from core.settings import settings
 from services.mailer import Mailer
@@ -33,11 +33,11 @@ async def enqueue_email(
     *,
     recipients: list[str],
     subject: str,
-    template_name: str | None,
-    context: dict | None,
-    body_html: str | None,
-    source_module: str | None,
-    created_by_user_id: int | None,
+    template_name: Optional[str],
+    context: Optional[Dict[str, Any]],
+    body_html: Optional[str],
+    source_module: Optional[str],
+    created_by_user_id: Optional[int],
 ) -> EmailOutbox:
     row = EmailOutbox(
         recipients=recipients,
