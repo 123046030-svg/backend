@@ -1,113 +1,67 @@
-# modules/notifications/service.py
-import random
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
+from typing import Any, Iterable
 
-from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, Dict, Any, List
-from .models import EmailOutbox
-from notifications.settings import settings
-from services.mailer import Mailer
 
-def utcnow():
-    return datetime.now(timezone.utc)
+from notifications.config import mail_settings
+from notifications.models import EmailOutbox
 
 
-def make_json_safe(obj: Any) -> Any:
-    if isinstance(obj, datetime):
-        return obj.isoformat()
-    if isinstance(obj, dict):
-        return {k: make_json_safe(v) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [make_json_safe(x) for x in obj]
-    return obj
+def _normalize_recipients(recipients: Iterable[str] | None) -> list[str]:
+    clean: list[str] = []
 
-def compute_next_retry(attempt: int) -> datetime:
-    # exponential backoff con jitter
-    base = settings.EMAIL_RETRY_BASE_DELAY_SECONDS
-    backoff = settings.EMAIL_RETRY_BACKOFF
-    max_delay = settings.EMAIL_RETRY_MAX_DELAY_SECONDS
-    jitter = settings.EMAIL_RETRY_JITTER_SECONDS
+    for r in recipients or []:
+        if r and str(r).strip():
+            clean.append(str(r).strip())
 
-    delay = min(int(base * (backoff ** max(0, attempt - 1))), max_delay)
-    delay += random.randint(0, max(0, jitter))
-    return utcnow() + timedelta(seconds=delay)
+    if not clean and mail_settings.default_recipient:
+        clean.append(mail_settings.default_recipient)
 
-def is_transient_error(exc: Exception) -> bool:
-    # Ajusta a tus excepciones típicas: ConnectionErrors, TimeoutError, etc.
-    name = type(exc).__name__
-    return name in {"ConnectionErrors", "TimeoutError", "OSError"}
+    seen = set()
+    result = []
+    for item in clean:
+        key = item.lower()
+        if key not in seen:
+            seen.add(key)
+            result.append(item)
+
+    return result
+
 
 async def enqueue_email(
     db: AsyncSession,
-    *,
-    recipients: list[str],
+    recipients: list[str] | None,
     subject: str,
-    template_name: Optional[str],
-    context: Optional[Dict[str, Any]],
-    body_html: Optional[str],
-    source_module: Optional[str],
-    created_by_user_id: Optional[int],
+    template_name: str | None = None,
+    context: dict[str, Any] | None = None,
+    body_html: str | None = None,
+    source_module: str | None = None,
+    created_by_user_id: int | None = None,
+    max_attempts: int | None = None,
 ) -> EmailOutbox:
-    
-    context = make_json_safe(context) if context is not None else None
-    
+    final_recipients = _normalize_recipients(recipients)
+
+    if not final_recipients:
+        raise ValueError("No hay recipients válidos ni MAIL_DEFAULT_RECIPIENT configurado.")
+
     row = EmailOutbox(
-        recipients=recipients,
+        status="PENDING",
+        recipients=final_recipients,
         subject=subject,
         template_name=template_name,
-        context=context,
+        context=context or {},
         body_html=body_html,
         source_module=source_module,
         created_by_user_id=created_by_user_id,
-        max_attempts=settings.EMAIL_RETRY_MAX_ATTEMPTS,
-        status="PENDING",
-        next_retry_at=utcnow(),  # listo para enviar
+        attempts=0,
+        max_attempts=max_attempts or mail_settings.max_attempts_default,
+        next_retry_at=datetime.utcnow(),
+        last_error=None,
+        locked=False,
+        locked_at=None,
     )
+
     db.add(row)
     await db.commit()
     await db.refresh(row)
     return row
-
-async def try_send_one(db: AsyncSession, mailer: Mailer, row: EmailOutbox) -> None:
-    try:
-        # marca como SENDING
-        row.status = "SENDING"
-        await db.commit()
-
-        if row.template_name:
-            await mailer.send_template(
-                subject=row.subject,
-                recipients=row.recipients,
-                template_name=row.template_name,
-                context=row.context or {},
-                background_tasks=None,
-            )
-        else:
-            await mailer.send_html(
-                subject=row.subject,
-                recipients=row.recipients,
-                html=row.body_html or "",
-                background_tasks=None,
-            )
-
-        row.status = "SENT"
-        row.sent_at = utcnow()
-        row.last_error = None
-        await db.commit()
-
-    except Exception as e:
-        row.attempts += 1
-        row.last_error = f"{type(e).__name__}: {e}"
-
-        retry_allowed = row.attempts < row.max_attempts
-        if settings.EMAIL_RETRY_ONLY_TRANSIENT and not is_transient_error(e):
-            retry_allowed = False
-
-        if retry_allowed:
-            row.status = "RETRY"
-            row.next_retry_at = compute_next_retry(row.attempts)
-        else:
-            row.status = "FAILED"
-
-        await db.commit()

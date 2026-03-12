@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Resumen de actualización</title>
+</head>
+<body>
+  <h2>Hola {{ full_name }}</h2>
+
+  <p>Tu perfil fue actualizado.</p>
+  <p><strong>Correo:</strong> {{ email }}</p>
+  <p><strong>Fecha:</strong> {{ updated_at }}</p>
+
+  {% if has_changes %}
+    <h3>Cambios realizados</h3>
+    <table border="1" cellpadding="6" cellspacing="0">
+      <thead>
+        <tr>
+          <th>Campo</th>
+          <th>Valor anterior</th>
+          <th>Valor nuevo</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in changes %}
+        <tr>
+          <td>{{ item.label }}</td>
+          <td>{{ item.old }}</td>
+          <td>{{ item.new }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No se detectaron cambios.</p>
+  {% endif %}
+</body>
+</html>

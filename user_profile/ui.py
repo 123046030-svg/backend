@@ -1,6 +1,6 @@
-# modules/demo_profile/ui.py
 from typing import Optional, List, Dict, Any
 from datetime import datetime
+from pathlib import Path
 
 from fastapi import APIRouter, Request, Form, Depends, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -10,49 +10,63 @@ from sqlalchemy import select
 
 from core.db import get_db
 from user_profile.models import DemoProfile
-from notifications.service import enqueue_email  # tu outbox
+from notifications.service import enqueue_email
 
-from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent  # .../user_profile
+BASE_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 router = APIRouter(prefix="/ui/profile", tags=["ui-profile"])
 
+
 def _diff(old: DemoProfile, new_data: Dict[str, Any]) -> List[Dict[str, str]]:
-    """
-    Retorna una lista de cambios tipo:
-    [{"field":"phone","label":"Teléfono","old":"...","new":"..."}]
-    """
     mapping = {
         "full_name": "Nombre",
         "email": "Correo",
         "phone": "Teléfono",
         "department": "Área/Departamento",
     }
+
     changes = []
     for field, label in mapping.items():
         old_val = getattr(old, field, None)
         new_val = new_data.get(field)
-        # normaliza None/""
+
         old_s = "" if old_val is None else str(old_val)
         new_s = "" if new_val is None else str(new_val)
+
         if old_s != new_s:
-            changes.append({"field": field, "label": label, "old": old_s, "new": new_s})
+            changes.append({
+                "field": field,
+                "label": label,
+                "old": old_s,
+                "new": new_s,
+            })
+
     return changes
+
 
 @router.get("/edit", response_class=HTMLResponse)
 async def edit_profile(request: Request, db: AsyncSession = Depends(get_db)):
-    # simulamos usuario logueado id=1
     user_id = 1
+
     res = await db.execute(select(DemoProfile).where(DemoProfile.id == user_id))
     profile = res.scalar_one_or_none()
+
     if not profile:
         raise HTTPException(404, "DemoProfile not found. Inserta el registro id=1 en DB.")
+
+    queued = request.query_params.get("queued")
+
     return templates.TemplateResponse(
         "ui/profile_edit.html",
-        {"request": request, "profile": profile, "message": None},
+        {
+            "request": request,
+            "profile": profile,
+            "message": f"correo encolado con id {queued}" if queued else None,
+        },
     )
+
 
 @router.post("/edit")
 async def edit_profile_post(
@@ -67,6 +81,7 @@ async def edit_profile_post(
 
     res = await db.execute(select(DemoProfile).where(DemoProfile.id == user_id))
     profile = res.scalar_one_or_none()
+
     if not profile:
         raise HTTPException(404, "DemoProfile not found.")
 
@@ -79,7 +94,6 @@ async def edit_profile_post(
 
     changes = _diff(profile, new_data)
 
-    # aplica cambios
     profile.full_name = new_data["full_name"]
     profile.email = new_data["email"]
     profile.phone = new_data["phone"]
@@ -89,9 +103,7 @@ async def edit_profile_post(
     await db.commit()
     await db.refresh(profile)
 
-    # Encolar correo con resumen
-    # Destino: el mismo usuario (profile.email) + opcional CC a auditoría
-    recipients = [profile.email]
+    recipients = [profile.email] if profile.email else []
 
     context = {
         "full_name": profile.full_name,
@@ -112,5 +124,4 @@ async def edit_profile_post(
         created_by_user_id=user_id,
     )
 
-    # Redirige a la misma vista con mensaje
     return RedirectResponse(url=f"/ui/profile/edit?queued={outbox.id}", status_code=303)
