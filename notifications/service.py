@@ -12,6 +12,16 @@ from services.mailer import Mailer
 def utcnow():
     return datetime.now(timezone.utc)
 
+
+def make_json_safe(obj: Any) -> Any:
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    if isinstance(obj, dict):
+        return {k: make_json_safe(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [make_json_safe(x) for x in obj]
+    return obj
+
 def compute_next_retry(attempt: int) -> datetime:
     # exponential backoff con jitter
     base = settings.EMAIL_RETRY_BASE_DELAY_SECONDS
@@ -39,6 +49,9 @@ async def enqueue_email(
     source_module: Optional[str],
     created_by_user_id: Optional[int],
 ) -> EmailOutbox:
+    
+    context = make_json_safe(context) if context is not None else None
+    
     row = EmailOutbox(
         recipients=recipients,
         subject=subject,
