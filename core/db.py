@@ -9,7 +9,7 @@ if not DATABASE_URL:
 
 
 engine = create_async_engine(
-    DATABASE_URL,
+    DATABASE_URL or "mysql+asyncmy://backend_user:REGINACORTES03@127.0.0.1:3306/backend",
     pool_pre_ping=True,
     future=True,
 )
