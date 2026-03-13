@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 import os
 
 
@@ -13,7 +14,7 @@ class MailSettings:
     mail_from: str = os.getenv("MAIL_FROM", "no-reply@tu-dominio.com")
     mail_from_name: str = os.getenv("MAIL_FROM_NAME", "Sistema")
 
-    default_recipient: str | None = os.getenv("MAIL_DEFAULT_RECIPIENT")
+    default_recipient: Optional[str] = os.getenv("MAIL_DEFAULT_RECIPIENT")
 
     retry_base_seconds: int = int(os.getenv("MAIL_RETRY_BASE_SECONDS", "60"))
     retry_max_seconds: int = int(os.getenv("MAIL_RETRY_MAX_SECONDS", "3600"))

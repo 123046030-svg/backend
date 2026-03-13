@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from typing import Optional
 from datetime import datetime, timedelta
 
 from sqlalchemy import select, or_
