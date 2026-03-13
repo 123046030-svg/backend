@@ -1,13 +1,13 @@
 import asyncio
 import logging
 
-from core.db import async_session_maker
+from core.db import get_db
 from notifications.worker import run_email_worker
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.WARNING,
     format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
 )
 
 if __name__ == "__main__":
-    asyncio.run(run_email_worker(async_session_maker))
+    asyncio.run(run_email_worker(get_db))
