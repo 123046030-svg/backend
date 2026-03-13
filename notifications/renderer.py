@@ -10,7 +10,7 @@ jinja_env = Environment(
 )
 
 
-def render_email(template_name: str | None, context: dict | None, body_html: str | None) -> str:
+def render_email(template_name: Optional[str], context: Optional[dict], body_html: Optional[str]) -> str:
     if body_html:
         return body_html
 

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Iterable
+from typing import Any, Iterable, Optional, List
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -30,14 +30,14 @@ def _normalize_recipients(recipients: Iterable[str] | None) -> list[str]:
 
 async def enqueue_email(
     db: AsyncSession,
-    recipients: list[str] | None,
+    recipients: Optional[List[str]],
     subject: str,
-    template_name: str | None = None,
+    template_name: Optional[str] = None,
     context: dict[str, Any] | None = None,
-    body_html: str | None = None,
-    source_module: str | None = None,
-    created_by_user_id: int | None = None,
-    max_attempts: int | None = None,
+    body_html: Optional[str] = None,
+    source_module: Optional[str] = None,
+    created_by_user_id: Optional[int] = None,
+    max_attempts: Optional[int] = None,
 ) -> EmailOutbox:
     final_recipients = _normalize_recipients(recipients)
 

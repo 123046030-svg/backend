@@ -19,7 +19,7 @@ def compute_next_retry(attempts: int) -> datetime:
     return datetime.utcnow() + timedelta(seconds=delay)
 
 
-async def claim_one_email(db: AsyncSession) -> EmailOutbox | None:
+async def claim_one_email(db: AsyncSession) -> Optional[EmailOutbox]:
     stmt = (
         select(EmailOutbox)
         .where(
