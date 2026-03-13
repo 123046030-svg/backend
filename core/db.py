@@ -4,8 +4,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR / ".env")
+# BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv("/etc/sduop/sduop.env")
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
