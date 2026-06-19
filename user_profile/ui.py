@@ -7,6 +7,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from core.security import verify_access_token, rate_limiter
 
 from core.db import get_db
 from user_profile.models import DemoProfile
@@ -16,7 +17,14 @@ from notifications.service import enqueue_email
 BASE_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
-router = APIRouter(prefix="/ui/profile", tags=["ui-profile"])
+router = APIRouter(
+    prefix="/ui/profile",
+    tags=["ui-profile"],
+    dependencies=[
+        Depends(rate_limiter),
+        Depends(verify_access_token),
+    ],
+)
 
 
 def _diff(old: DemoProfile, new_data: Dict[str, Any]) -> List[Dict[str, str]]:
