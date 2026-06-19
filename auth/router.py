@@ -2,7 +2,7 @@ import os
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from core.security import create_access_token
+from core.segurity import create_access_token
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
